@@ -1,4 +1,4 @@
-require('dotenv').config(); // load .env file
+require('dotenv').config();
 const puppeteer = require("puppeteer");
 const nodemailer = require("nodemailer");
 
@@ -27,75 +27,81 @@ async function sendEmail(subject, body) {
     console.log("✅ Email sent successfully");
 }
 
+/* ================= BROWSER LAUNCHER ================= */
+async function launchBrowser() {
+    return await puppeteer.launch({
+        headless: true, // production safe
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-gpu'
+        ],
+    });
+}
+
 /* ================= SCRAPER ================= */
 async function runJobBot() {
-    const browser = await puppeteer.launch({
-  headless: "new",
-  args: ['--no-sandbox', '--disable-setuid-sandbox'],
-});
+    let browser;
+    try {
+        browser = await launchBrowser();
+        const page = await browser.newPage();
 
-    const page = await browser.newPage();
+        const URL =
+            "https://www.naukri.com/software-developer-jobs-in-chennai?k=software%20developer&l=chennai&experience=0&naukriCampus=true";
 
-    const URL =
-        "https://www.naukri.com/software-developer-jobs-in-chennai?k=software%20developer&l=chennai&experience=0&naukriCampus=true";
-
-    await page.goto(URL, { waitUntil: "domcontentloaded", timeout: 0 });
-
-    await page.waitForSelector(".srp-jobtuple-wrapper", { timeout: 60000 });
-
-    const jobs = await page.evaluate(() => {
-        const wrappers = document.querySelectorAll(".srp-jobtuple-wrapper");
-        const data = [];
-
-        wrappers.forEach((wrapper, index) => {
-            if (index < 20) {
-                const job = wrapper.querySelector(".cust-job-tuple");
-                if (!job) return;
-
-                data.push({
-                    title: job.querySelector("h2 a.title")?.innerText.trim(),
-                    link: job.querySelector("h2 a.title")?.href,
-
-                    company: job.querySelector(".comp-name")?.innerText.trim(),
-
-                    walkInDate: job.querySelector(".walkDateWdth")?.innerText.trim(),
-
-                    salary: job.querySelector(".sal-wrap span")?.getAttribute("title"),
-
-                    location: job.querySelector(".loc-wrap span")?.getAttribute("title"),
-
-                    description: job.querySelector(".job-desc")?.innerText.trim(),
-
-                    posted: job.querySelector(".job-post-day")?.innerText.trim(),
-
-                    isWalkIn: job.querySelector(".ttc__walk-in") ? "YES" : "NO"
-                });
-            }
+        await page.goto(URL, {
+            waitUntil: 'networkidle0',
+            timeout: 0
         });
 
-        return data;
-    });
+        await page.waitForSelector(".srp-jobtuple-wrapper", { timeout: 60000 });
 
-    console.log("\n✅ SCRAPED JOB:\n", jobs);
+        const jobs = await page.evaluate(() => {
+            const wrappers = document.querySelectorAll(".srp-jobtuple-wrapper");
+            const data = [];
 
-    const validPosted = (postedText = "") => {
-        const text = postedText.toLowerCase();
-        return (
-            text.includes("just now") ||
-            text.includes("few hours") ||
-            text.includes("hour ago") ||
-            text.includes("hours ago") ||
-            text.includes("1 day ago")
-        );
-    };
+            wrappers.forEach((wrapper, index) => {
+                if (index < 20) {
+                    const job = wrapper.querySelector(".cust-job-tuple");
+                    if (!job) return;
 
-    const recentJobs = jobs.filter(job => validPosted(job.posted));
+                    data.push({
+                        title: job.querySelector("h2 a.title")?.innerText.trim(),
+                        link: job.querySelector("h2 a.title")?.href,
+                        company: job.querySelector(".comp-name")?.innerText.trim(),
+                        walkInDate: job.querySelector(".walkDateWdth")?.innerText.trim(),
+                        salary: job.querySelector(".sal-wrap span")?.getAttribute("title"),
+                        location: job.querySelector(".loc-wrap span")?.getAttribute("title"),
+                        description: job.querySelector(".job-desc")?.innerText.trim(),
+                        posted: job.querySelector(".job-post-day")?.innerText.trim(),
+                        isWalkIn: job.querySelector(".ttc__walk-in") ? "YES" : "NO"
+                    });
+                }
+            });
 
-    if (recentJobs.length > 0) {
-        let mailBody = `🔥 RECENT JOB ALERTS – SOFTWARE / PYTHON (CHENNAI)\n\n`;
+            return data;
+        });
 
-        recentJobs.forEach((job, index) => {
-            mailBody += `
+        console.log("\n✅ SCRAPED JOBS:\n", jobs);
+
+        const validPosted = (postedText = "") => {
+            const text = postedText.toLowerCase();
+            return (
+                text.includes("just now") ||
+                text.includes("few hours") ||
+                text.includes("hour ago") ||
+                text.includes("hours ago") ||
+                text.includes("1 day ago")
+            );
+        };
+
+        const recentJobs = jobs.filter(job => validPosted(job.posted));
+
+        if (recentJobs.length > 0) {
+            let mailBody = `🔥 RECENT JOB ALERTS – SOFTWARE / PYTHON (CHENNAI)\n\n`;
+
+            recentJobs.forEach((job, index) => {
+                mailBody += `
 ${index + 1}. ${job.title}
 Company: ${job.company}
 Location: ${job.location}
@@ -106,19 +112,23 @@ Apply: ${job.link}
 
 ----------------------------------------
 `;
-        });
+            });
 
-        await sendEmail(
-            "🚀 Fresh Job Alerts – Just Now / Few Hours Ago",
-            mailBody
-        );
-    } else {
-        console.log("❌ No recent jobs found");
+            await sendEmail(
+                "🚀 Fresh Job Alerts – Just Now / Few Hours Ago",
+                mailBody
+            );
+        } else {
+            console.log("❌ No recent jobs found");
+        }
+
+    } catch (err) {
+        console.error("❌ Job bot error:", err);
+    } finally {
+        if (browser) {
+            await browser.close();
+        }
     }
-
-
-    await browser.close();
-
-};
+}
 
 module.exports = runJobBot;
