@@ -29,6 +29,7 @@ async function sendEmail(subject, body) {
 /* ================= SCRAPER ================= */
 async function runJobBot() {
     const browser = await puppeteer.launch({
+        executablePath: '/usr/bin/google-chrome-stable',
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
