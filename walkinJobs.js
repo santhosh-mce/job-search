@@ -29,16 +29,11 @@ async function sendEmail(subject, body) {
 /* ================= SCRAPER ================= */
 async function runJobBot() {
     const browser = await puppeteer.launch({
-        executablePath: '/usr/bin/google-chrome-stable',
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
     const page = await browser.newPage();
-
-    await page.setUserAgent(
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
-    );
 
     const URL =
         "https://www.naukri.com/software-developer-jobs-in-chennai?k=software%20developer&l=chennai&experience=0&naukriCampus=true";
