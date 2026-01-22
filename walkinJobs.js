@@ -30,9 +30,15 @@ async function sendEmail(subject, body) {
 /* ================= SCRAPER ================= */
 async function runJobBot() {
     const browser = await puppeteer.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
+  headless: "new",
+  args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--single-process',
+    '--no-zygote',
+  ],
+  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
+});
 
     const page = await browser.newPage();
 
