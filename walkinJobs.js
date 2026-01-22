@@ -3,8 +3,8 @@ const nodemailer = require("nodemailer");
 
 /* ================= EMAIL FUNCTION ================= */
 async function sendEmail(subject, body) {
-    const sender = process.env.EMAIL_USER;
-    const receiver = process.env.EMAIL_TO;
+    const sender = "santhosh.mce1234@gmail.com";
+    const receiver = "ssantoshkumar97713@gmail.com";
 
     const transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
@@ -12,7 +12,7 @@ async function sendEmail(subject, body) {
         secure: false,
         auth: {
             user: sender,
-            pass: process.env.EMAIL_PASS // Gmail App Password
+            pass: "xwsssdduwzqjxapc" // Gmail App Password
         }
     });
 
