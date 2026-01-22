@@ -1,3 +1,4 @@
+require('dotenv').config(); // load .env file
 const puppeteer = require("puppeteer");
 const nodemailer = require("nodemailer");
 
