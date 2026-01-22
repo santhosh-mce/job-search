@@ -29,8 +29,8 @@ async function sendEmail(subject, body) {
 /* ================= SCRAPER ================= */
 async function runJobBot() {
     const browser = await puppeteer.launch({
-        headless: false, // set true after testing
-        args: ["--start-maximized"]
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
     const page = await browser.newPage();
