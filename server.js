@@ -11,7 +11,7 @@ app.get("/", (req, res) => {
 });
 
 // ⏰ RUN EVERY 30 MINUTES
-cron.schedule("*/60 * * * *", async () => {
+cron.schedule("*/1 * * * *", async () => {
     await runJobBot();
 });
 

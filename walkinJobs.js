@@ -29,11 +29,20 @@ async function sendEmail(subject, body) {
 }
 
 /* ================= BROWSER LAUNCHER ================= */
+const isProd = process.env.NODE_ENV === "production";
 async function launchBrowser() {
+    if (isProd) {
+        // ✅ Render / Linux
+        return await puppeteer.launch({
+            headless: true,
+            executablePath: await chromium.executablePath(),
+            args: chromium.args,
+        });
+    }
+
+    // ✅ Local Windows / Mac
     return await puppeteer.launch({
-        headless: true, // production safe
-        executablePath: await chromium.executablePath(),
-        args: chromium.args,
+        headless: true,
     });
 }
 
@@ -43,6 +52,14 @@ async function runJobBot() {
     try {
         browser = await launchBrowser();
         const page = await browser.newPage();
+        await page.setUserAgent(
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+            "AppleWebKit/537.36 (KHTML, like Gecko) " +
+            "Chrome/120.0.0.0 Safari/537.36"
+        );
+
+        await page.setViewport({ width: 1366, height: 768 });
+
 
         const URL =
             "https://www.naukri.com/software-developer-jobs-in-chennai?k=software%20developer&l=chennai&experience=0&naukriCampus=true";
