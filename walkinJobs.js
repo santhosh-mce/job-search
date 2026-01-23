@@ -1,6 +1,7 @@
 require('dotenv').config();
 const puppeteer = require("puppeteer");
 const nodemailer = require("nodemailer");
+const chromium = require("@sparticuz/chromium");
 
 /* ================= EMAIL FUNCTION ================= */
 async function sendEmail(subject, body) {
@@ -31,11 +32,8 @@ async function sendEmail(subject, body) {
 async function launchBrowser() {
     return await puppeteer.launch({
         headless: true, // production safe
-        args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-gpu'
-        ],
+        executablePath: await chromium.executablePath(),
+        args: chromium.args,
     });
 }
 
