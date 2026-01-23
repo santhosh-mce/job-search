@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "postinstall": "npx puppeteer browsers install chrome",
+    "postinstall": "npx puppeteer browsers install",
     "dev": "nodemon server.js"
   },
   "keywords": [],
